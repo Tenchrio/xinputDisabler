@@ -25,9 +25,11 @@ private:
 
     void SetXinputComboBox();
     void CreateTrayIcon();
+    void closeEvent(QCloseEvent *event);
 public slots:
     void SetDevice();
     void CheckChoice();
+    void ShowWindow();
 };
 
 #endif // MAINWINDOW_H

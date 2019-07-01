@@ -4,6 +4,7 @@
 #include <QSettings>
 #include <QAction>
 #include <QMenu>
+#include <QCloseEvent>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -93,7 +94,26 @@ void MainWindow::CreateTrayIcon()
     QAction *quit_action = new QAction( "Close app", trayIcon );
     connect( quit_action, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()) );
 
+    QAction *show_action = new QAction( "Open settings", trayIcon );
+    connect( show_action, SIGNAL(triggered()), this, SLOT(ShowWindow()) );
+
     QMenu *tray_icon_menu = new QMenu;
+    tray_icon_menu->addAction( show_action );
     tray_icon_menu->addAction( quit_action );
     trayIcon->setContextMenu( tray_icon_menu );
 }
+
+void MainWindow::closeEvent(QCloseEvent *event)
+ {
+     if (trayIcon->isVisible()) {
+         hide();
+         event->ignore();
+     }
+ }
+
+void MainWindow::ShowWindow()
+ {
+    //Nice way to refresh the input
+    SetXinputComboBox();
+    show();
+ }

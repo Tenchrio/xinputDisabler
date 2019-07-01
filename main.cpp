@@ -10,7 +10,6 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("XInputDisabler");
     QSettings settings;
     MainWindow w;
-    w.show();
 
     return a.exec();
 }
