@@ -11,12 +11,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    setWindowTitle("XInputDisabler");
     SetXinputComboBox();
+    SetSavedSettings();
     CreateTrayIcon();
 
     //Connections
     connect(this->ui->my_SaveButton,SIGNAL(clicked()),this,SLOT(SetDevice()));
     connect(this->ui->my_DeviceListCbox,SIGNAL(currentIndexChanged(const QString&)),this,SLOT(CheckChoice()));
+    connect(this->ui->my_OnlyPointerCheck,SIGNAL(clicked()),this,SLOT(ToggleOnlyKPChoice()));
+    connect(this->ui->my_OnlyKeyboardCheck,SIGNAL(clicked()),this,SLOT(ToggleOnlyKPChoice()));
+    connect(this->ui->my_DisableOnStartup,SIGNAL(clicked()),this,SLOT(CheckStartUp()));
 }
 
 MainWindow::~MainWindow()
@@ -117,3 +122,41 @@ void MainWindow::ShowWindow()
     SetXinputComboBox();
     show();
  }
+
+void MainWindow::SetSavedSettings()
+{
+    QSettings settings("Tenchrio", "XInputDisabler");
+    this->ui->my_OnlyPointerCheck->setChecked(settings.value("onlyPointer").toBool());
+    this->ui->my_OnlyKeyboardCheck->setChecked(settings.value("onlyKeyboard").toBool());
+    this->ui->my_DisableOnStartup->setChecked(settings.value("disableOnStart").toBool());
+}
+
+//It is pointless for both Keyboard and Pointer to be enable
+//But it also has to be possible to have both off so we can't have a radio button (without a third option which seems counter intuitive)
+void MainWindow::ToggleOnlyKPChoice()
+{
+    QSettings settings("Tenchrio","XInputDisabler");
+    if (sender() == this->ui->my_OnlyPointerCheck) {
+        this->ui->my_OnlyKeyboardCheck->setChecked(false);
+        settings.setValue("onlyKeyboard",false);
+        if (this->ui->my_OnlyPointerCheck->isChecked() == true){
+            settings.setValue("onlyPointer",true);
+        } else {
+            settings.setValue("onlyPointer",false);
+        }
+    } else {
+        this->ui->my_OnlyPointerCheck->setChecked(false);
+        settings.setValue("onlyPointer",false);
+        if (this->ui->my_OnlyKeyboardCheck->isChecked() == true){
+            settings.setValue("onlyKeyboard",true);
+        } else {
+            settings.setValue("onlyKeyboard",false);
+        }
+    }
+}
+
+void MainWindow::CheckStartUp()
+{
+    QSettings settings("Tenchrio", "XInputDisabler");
+    settings.setValue("disableOnStart",this->ui->my_DisableOnStartup->isChecked());
+}
