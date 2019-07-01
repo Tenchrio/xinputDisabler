@@ -21,6 +21,10 @@ private:
     bool my_isDisabled;
     QStringList GetXinputList();
     void SetXinputComboBox();
+
+public slots:
+    void SetDevice();
+    void CheckChoice();
 };
 
 #endif // MAINWINDOW_H

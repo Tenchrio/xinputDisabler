@@ -9,6 +9,10 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     SetXinputComboBox();
+
+    //Connections
+    connect(this->ui->my_SaveButton,SIGNAL(clicked()),this,SLOT(SetDevice()));
+    connect(this->ui->my_DeviceListCbox,SIGNAL(currentIndexChanged(const QString&)),this,SLOT(CheckChoice()));
 }
 
 MainWindow::~MainWindow()
@@ -18,7 +22,8 @@ MainWindow::~MainWindow()
 
 //This function allows us to get the latest list of Xinput devices
 //I do not use GREP as piping does not work with QProcess and it can be worked around without forcing a specific shell
-QStringList MainWindow::GetXinputList(){
+QStringList MainWindow::GetXinputList()
+{
     QProcess getproc;
     getproc.start("xinput list");
     getproc.waitForFinished();
@@ -27,10 +32,12 @@ QStringList MainWindow::GetXinputList(){
 }
 
 //A function we call to set the devices in our Combobox
-void MainWindow::SetXinputComboBox(){
+void MainWindow::SetXinputComboBox()
+{
     QSettings settings("Tenchrio","XInputDisabler");
 
     auto devices = GetXinputList();
+    int index = 0;
     for (int var = 0; var<devices.size(); var++) {
         devices[var].truncate(devices[var].indexOf("id="));
         devices[var].replace("↳","");
@@ -45,9 +52,28 @@ void MainWindow::SetXinputComboBox(){
         } while(devices[var].startsWith(" "));
 
         if (devices[var] == settings.value("choice").toString() && devices[var]!=""){
-            this->ui->my_SaveButton->setEnabled(false);
+            this->ui->my_SaveButton->setEnabled(false);\
+            index = var;
             my_isDisabled = false;
         }
     }
     this->ui->my_DeviceListCbox->addItems(devices);
+    this->ui->my_DeviceListCbox->setCurrentIndex(index);
+}
+
+void MainWindow::SetDevice()
+{
+    QSettings settings("Tenchrio", "XInputDisabler");
+    settings.setValue("choice",this->ui->my_DeviceListCbox->currentText());
+    this->ui->my_SaveButton->setEnabled(false);
+}
+
+void MainWindow::CheckChoice()
+{
+    QSettings settings("Tenchrio", "XInputDisabler");
+    if (settings.value("choice").toString() == this->ui->my_DeviceListCbox->currentText()){
+        this->ui->my_SaveButton->setEnabled(false);
+    } else {
+        this->ui->my_SaveButton->setEnabled(true);
+    }
 }
