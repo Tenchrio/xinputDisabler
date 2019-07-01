@@ -17,6 +17,10 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    //Here we keep track what the state is off the device
+    bool my_isDisabled;
+    QStringList GetXinputList();
+    void SetXinputComboBox();
 };
 
 #endif // MAINWINDOW_H
