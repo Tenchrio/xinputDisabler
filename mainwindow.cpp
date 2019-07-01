@@ -28,7 +28,7 @@ QStringList MainWindow::GetXinputList(){
 
 //A function we call to set the devices in our Combobox
 void MainWindow::SetXinputComboBox(){
-    QSettings settings;
+    QSettings settings("Tenchrio","XInputDisabler");
 
     auto devices = GetXinputList();
     for (int var = 0; var<devices.size(); var++) {
