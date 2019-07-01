@@ -2,6 +2,8 @@
 #include "ui_mainwindow.h"
 #include <QProcess>
 #include <QSettings>
+#include <QAction>
+#include <QMenu>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -9,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     SetXinputComboBox();
+    CreateTrayIcon();
 
     //Connections
     connect(this->ui->my_SaveButton,SIGNAL(clicked()),this,SLOT(SetDevice()));
@@ -76,4 +79,21 @@ void MainWindow::CheckChoice()
     } else {
         this->ui->my_SaveButton->setEnabled(true);
     }
+}
+
+void MainWindow::CreateTrayIcon()
+{
+    trayIcon = new QSystemTrayIcon(this);
+    trayIcon->setIcon(QIcon(":/mouse.png"));
+    trayIcon->setToolTip(tr("XInputDisabler"));
+    trayIcon->setVisible(true);
+    trayIcon->show();
+
+    //Set up the drop menu for the trayicon
+    QAction *quit_action = new QAction( "Close app", trayIcon );
+    connect( quit_action, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()) );
+
+    QMenu *tray_icon_menu = new QMenu;
+    tray_icon_menu->addAction( quit_action );
+    trayIcon->setContextMenu( tray_icon_menu );
 }

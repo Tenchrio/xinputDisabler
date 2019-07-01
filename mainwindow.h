@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QSystemTrayIcon>
 
 namespace Ui {
 class MainWindow;
@@ -20,8 +21,10 @@ private:
     //Here we keep track what the state is off the device
     bool my_isDisabled;
     QStringList GetXinputList();
-    void SetXinputComboBox();
+    QSystemTrayIcon *trayIcon;
 
+    void SetXinputComboBox();
+    void CreateTrayIcon();
 public slots:
     void SetDevice();
     void CheckChoice();

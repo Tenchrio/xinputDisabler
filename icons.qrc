@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>mousedisabled.png</file>
+        <file>mouse.png</file>
+    </qresource>
+</RCC>
