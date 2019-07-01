@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     QSettings settings("Tenchrio", "XInputDisabler");
+    setFixedSize(628,244);
     setWindowTitle("XInputDisabler");
     SetXinputComboBox();
     SetSavedSettings();
@@ -30,6 +31,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this->ui->my_DisableOnStartup,SIGNAL(clicked()),this,SLOT(CheckStartUp()));
     connect(trayIcon,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
             this, SLOT(TrayActivation(QSystemTrayIcon::ActivationReason)));
+    connect(this->ui->my_NoMessage,SIGNAL(clicked()),this,SLOT(CheckMessageChoice()));
+    connect(this->ui->my_ToggleButton,SIGNAL(clicked()),this,SLOT(ToggleDevice()));
 }
 
 MainWindow::~MainWindow()
@@ -74,6 +77,7 @@ void MainWindow::SetXinputComboBox()
             my_isDisabled = false;
         }
     }
+    this->ui->my_DeviceListCbox->clear();
     this->ui->my_DeviceListCbox->addItems(devices);
     this->ui->my_DeviceListCbox->setCurrentIndex(index);
 }
@@ -137,6 +141,7 @@ void MainWindow::SetSavedSettings()
     this->ui->my_OnlyPointerCheck->setChecked(settings.value("onlyPointer").toBool());
     this->ui->my_OnlyKeyboardCheck->setChecked(settings.value("onlyKeyboard").toBool());
     this->ui->my_DisableOnStartup->setChecked(settings.value("disableOnStart").toBool());
+    this->ui->my_NoMessage->setChecked(settings.value("DontShowMessage").toBool());
 }
 
 //It is pointless for both Keyboard and Pointer to be enable
@@ -188,7 +193,6 @@ void MainWindow::TrayActivation(QSystemTrayIcon::ActivationReason reason)
 
 void MainWindow::ToggleDevice()
 {
-    trayIcon->showMessage("What?","Enabling device");
     QSettings settings("Tenchrio", "XInputDisabler");
 
     QStringList allchoices = GetXinputList();
@@ -216,16 +220,27 @@ void MainWindow::ToggleDevice()
             QString secondCommand = "xinput enable " + choices[var];
             action.start(secondCommand);
             action.waitForFinished();
-            trayIcon->showMessage("What?","Enabled device '" + choices[var] + "'");
+            if (!settings.value("DontShowMessage").toBool()){
+                trayIcon->showMessage("What?","Enabled device '" + choices[var] + "'");
+            }
             trayIcon->setIcon(QIcon(":/mouse.png"));
         } else {
             QString secondCommand = "xinput disable " + choices[var];
             action.start(secondCommand);
             action.waitForFinished();
-            trayIcon->showMessage("What?","Disabled device '" + choices[var] + "'");
+            if (!settings.value("DontShowMessage").toBool()){
+                trayIcon->showMessage("What?","Disabled device '" + choices[var] + "'");
+            }
             trayIcon->setIcon(QIcon(":/mousedisabled.png"));
         }
     }
     //We toggle the isDisabled variable
     my_isDisabled = !my_isDisabled;
 }
+
+void MainWindow::CheckMessageChoice()
+{
+    QSettings settings("Tenchrio", "XInputDisabler");
+    settings.setValue("DontShowMessage",this->ui->my_NoMessage->isChecked());
+}
+
