@@ -11,10 +11,16 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    QSettings settings("Tenchrio", "XInputDisabler");
     setWindowTitle("XInputDisabler");
     SetXinputComboBox();
     SetSavedSettings();
     CreateTrayIcon();
+    my_isDisabled = false;
+
+    if (settings.value("disableOnStart").toBool()){
+        ToggleDevice();
+    }
 
     //Connections
     connect(this->ui->my_SaveButton,SIGNAL(clicked()),this,SLOT(SetDevice()));
@@ -22,6 +28,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this->ui->my_OnlyPointerCheck,SIGNAL(clicked()),this,SLOT(ToggleOnlyKPChoice()));
     connect(this->ui->my_OnlyKeyboardCheck,SIGNAL(clicked()),this,SLOT(ToggleOnlyKPChoice()));
     connect(this->ui->my_DisableOnStartup,SIGNAL(clicked()),this,SLOT(CheckStartUp()));
+    connect(trayIcon,SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+            this, SLOT(TrayActivation(QSystemTrayIcon::ActivationReason)));
 }
 
 MainWindow::~MainWindow()
@@ -159,4 +167,65 @@ void MainWindow::CheckStartUp()
 {
     QSettings settings("Tenchrio", "XInputDisabler");
     settings.setValue("disableOnStart",this->ui->my_DisableOnStartup->isChecked());
+}
+
+void MainWindow::TrayActivation(QSystemTrayIcon::ActivationReason reason)
+{
+    QSettings settings("Tenchrio", "XInputDisabler");
+    switch (reason) {
+    case QSystemTrayIcon::Trigger:
+        ToggleDevice();
+        break;
+    case QSystemTrayIcon::MiddleClick:
+        ToggleDevice();
+        break;
+    default:
+        ;
+    }
+}
+
+
+
+void MainWindow::ToggleDevice()
+{
+    trayIcon->showMessage("What?","Enabling device");
+    QSettings settings("Tenchrio", "XInputDisabler");
+
+    QStringList allchoices = GetXinputList();
+    QStringList choices;
+
+    //Check for the choice's ID in the list, sometimes a device has both a pointer and a keyboard (e.g. Razer Naga, Razer Nostromo etc etc)
+    for (int var = 0; var < allchoices.size(); ++var) {
+        if (allchoices[var].contains(settings.value("choice").toString())) {
+            if (allchoices[var].contains("slave  keyboard") && settings.value("onlyKeyboard")==false) {
+                choices << allchoices[var];
+            } else if (allchoices[var].contains("slave  pointer") && settings.value("onlyKeyboard")==false){
+                choices << allchoices[var];
+            }
+
+        }
+    }
+
+    //Next we extract the id from the extracted choices and disable/enable them
+    for (int var = 0; var < choices.size(); ++var) {
+        choices[var].truncate(choices[var].indexOf("["));
+        choices[var].remove(0,choices[var].indexOf("id="));
+        choices[var].replace("id=","");
+        QProcess action;
+        if (my_isDisabled){
+            QString secondCommand = "xinput enable " + choices[var];
+            action.start(secondCommand);
+            action.waitForFinished();
+            trayIcon->showMessage("What?","Enabled device '" + choices[var] + "'");
+            trayIcon->setIcon(QIcon(":/mouse.png"));
+        } else {
+            QString secondCommand = "xinput disable " + choices[var];
+            action.start(secondCommand);
+            action.waitForFinished();
+            trayIcon->showMessage("What?","Disabled device '" + choices[var] + "'");
+            trayIcon->setIcon(QIcon(":/mousedisabled.png"));
+        }
+    }
+    //We toggle the isDisabled variable
+    my_isDisabled = !my_isDisabled;
 }

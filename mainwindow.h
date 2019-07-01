@@ -27,12 +27,14 @@ private:
     void CreateTrayIcon();
     void closeEvent(QCloseEvent *event);
     void SetSavedSettings();
+    void ToggleDevice();
 public slots:
     void SetDevice();
     void CheckChoice();
     void ShowWindow();
     void ToggleOnlyKPChoice();
     void CheckStartUp();
+    void TrayActivation(QSystemTrayIcon::ActivationReason reason);
 };
 
 #endif // MAINWINDOW_H
